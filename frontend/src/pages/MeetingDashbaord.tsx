@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Calendar, Video, Users, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useNavigate } from 'react-router-dom';
+import { meetingsApi } from '../services/api';
 
 interface Meeting {
   _id: string;
@@ -41,6 +43,7 @@ interface SyncResponse {
 const API_BASE_URL = 'http://localhost:5000/api';
 
 const MeetingsDashboard = () => {
+  const navigate = useNavigate();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [highPriorityEmails, setHighPriorityEmails] = useState<Email[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,25 +56,13 @@ const MeetingsDashboard = () => {
       setLoading(true);
       setError(null);
 
-      console.log('Fetching dashboard data...');
-      const [meetingsResponse, emailsResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/meetings`, {
-          params: {
-            status: 'scheduled'
-          }
-        }),
-        axios.get(`${API_BASE_URL}/emails`, {
-          params: {
-            urgency: 'High'
-          }
-        })
+      const [meetings, emails] = await Promise.all([
+        meetingsApi.getMeetings(),
+        meetingsApi.getHighPriorityEmails()
       ]);
 
-      console.log('Meetings data:', meetingsResponse.data);
-      console.log('High priority emails:', emailsResponse.data);
-
-      setMeetings(meetingsResponse.data);
-      setHighPriorityEmails(emailsResponse.data);
+      setMeetings(meetings);
+      setHighPriorityEmails(emails);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError('Failed to load dashboard data. Please try again.');
@@ -82,8 +73,7 @@ const MeetingsDashboard = () => {
 
   const resetProcessingStatus = async () => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/reset-processing-status`);
-      console.log('Reset response:', response.data);
+      const response = await meetingsApi.resetProcessingStatus();
       setSyncStatus('Processing status reset. Please sync emails now.');
     } catch (err) {
       console.error('Error resetting status:', err);
@@ -97,18 +87,15 @@ const MeetingsDashboard = () => {
       setError(null);
       setSyncStatus('Starting sync...');
 
-      console.log('Starting email sync...');
-      const response = await axios.post<SyncResponse>(`${API_BASE_URL}/analyze-new-emails`);
-      console.log('Sync response:', response.data);
+      const response = await meetingsApi.syncEmails();
       
-      if (response.data.success) {
-        setSyncStatus(`Sync completed: Found ${response.data.summary.totalFound} emails, ` +
-          `Processed ${response.data.summary.processed}, ` +
-          `Skipped ${response.data.summary.skipped}, ` +
-          `Errors ${response.data.summary.errors}`);
+      if (response.success) {
+        setSyncStatus(`Sync completed: Found ${response.summary.totalFound} emails, ` +
+          `Processed ${response.summary.processed}, ` +
+          `Skipped ${response.summary.skipped}, ` +
+          `Errors ${response.summary.errors}`);
         await fetchDashboardData();
       } else {
-        console.warn('Sync completed with issues:', response.data);
         setError('Sync completed with errors. Please check the logs.');
       }
     } catch (err) {

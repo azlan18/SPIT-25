@@ -28,7 +28,8 @@ const NavLink = ({ to, label, icon: Icon }) => {
         className="relative px-3 py-2 rounded-lg flex items-center gap-3 transition-colors"
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        whileHover={{ scale: 1.02 }}>
+        whileHover={{ scale: 1.02 }}
+      >
         <Icon
           className={`w-5 h-5 ${
             isActive ? "text-[#151616]" : "text-[#151616]/60"
@@ -60,21 +61,21 @@ const NavLink = ({ to, label, icon: Icon }) => {
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { session, setSession } = useAuth();
-  const navigate = useNavigate(); // Hook to enable navigation
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('token');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
-  
     setSession(null);
-    navigate('/'); // Navigate to the home page
-    window.location.reload(); // Refresh the page
+    navigate('/');
+    window.location.reload();
   };
-  
 
   const navItems = [
     { to: "/", label: "Home", icon: Home },
-    { to: "/dashboard", label: "Dashboard", icon: Gauge },
+    { to: "/meetings", label: "Meetings", icon: Gauge },
+    { to: "/notion", label: "Notion", icon: ScrollText }
   ];
 
   return (
@@ -104,25 +105,15 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {session ? (
-              <>
-                <div className="flex flex-col items-end">
-                  <span className="text-sm font-medium text-[#151616]">
-                    {session.user.username.split('@')[0]}
-                  </span>
-                  <span className="text-xs text-[#151616]/70">
-                    {session.user.email}
-                  </span>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleLogout}
-                  className="px-4 py-2 rounded-lg bg-[#D6F32F] border-2 border-[#151616] shadow-[3px_3px_0px_0px_#151616] hover:shadow-[1px_1px_0px_0px_#151616] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm font-medium"
-                >
-                  Logout
-                </motion.button>
-              </>
+            {isLoggedIn ? (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-lg bg-[#D6F32F] border-2 border-[#151616] shadow-[3px_3px_0px_0px_#151616] hover:shadow-[1px_1px_0px_0px_#151616] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-sm font-medium"
+              >
+                Logout
+              </motion.button>
             ) : (
               <>
                 <Link to="/login">

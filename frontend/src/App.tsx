@@ -1,14 +1,14 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import Navbar from './components/NavBar';
 import Footer from './components/Footer';
 import MeetingsDashboard from "./pages/MeetingDashbaord";
-
+import { Notion } from "./components/Notion";
 
 const App = () => {
-  const isLoggedIn = !!localStorage.getItem('token'); // Check if token exists in localStorage
+  const isLoggedIn = !!localStorage.getItem('token');
 
   return (
     <Router>
@@ -20,10 +20,13 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route 
-              path="/dashboard" 
+              path="/meetings"
               element={<MeetingsDashboard />} 
             />
-
+            <Route 
+              path="/notion" 
+              element={<Notion />} 
+            />
           </Routes>
         </main>
         <Footer />

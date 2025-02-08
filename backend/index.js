@@ -8,6 +8,7 @@ import { Email } from "./models/Email.js";
 import { Meeting } from "./models/Meeting.js";
 import { ProcessingStatus } from "./models/ProcessingStatus.js";
 import cors from "cors";
+import router from './routes/index.js';
 
 dotenv.config();
 
@@ -15,6 +16,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 const PORT = 5000;
+
+// Move router before other routes
+app.use('/api', router);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
